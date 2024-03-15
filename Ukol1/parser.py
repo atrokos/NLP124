@@ -1,10 +1,21 @@
-
+from typing import Optional
 """
-"AND" : {
-    "value": "Brutus",
-    "OR": {
-        "value": "Caesar",
-        "value": "Pontius"
+{
+    "type": AND,
+    "left": {
+        "type": "value",
+        "value": "Brutus"
+    },
+    "right": {
+        "type": "OR",
+        "left": {
+            "type": "value",
+            "value": "Caesar"
+        },
+        "right": {
+            "type": "value",
+            "value": "Pontius"
+        },
     }
 }
 
@@ -20,4 +31,38 @@ Process:
 3) All values processed => intersect [Brutus] with [Caesar U Pontius]
 
 Handling NOT => diff with w
+=> must have an implicit ALL AND (User command)
+
+First always evaluate user command. If it is not a NOT, throw ALL away.
 """
+
+def tokenize_command(comm: str) -> list[str]:
+    result = []
+    curr = []
+
+    for char in comm.strip():
+        match char:
+            case "(" | ")":
+                if len(curr) > 0:
+                    result.append("".join(curr))
+                    curr = []
+                result.append(char)
+            case " ":
+                if len(curr) > 0:
+                    result.append("".join(curr))
+                    curr = []
+            case _:
+                curr.append(char)
+
+    if len(curr) > 0:
+        result.append("".join(curr))
+
+    return result
+
+def parse_command(tokens: list[str]) -> dict:
+    saved_comm = None
+    result = dict()
+    
+
+
+print(tokenize_command("Caesar AND Brutus OR (WHatever OR HE)"))
