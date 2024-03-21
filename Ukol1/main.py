@@ -1,6 +1,6 @@
 from database import Database
 from pathlib import Path
-
+from evaluate import Evaluator
 
 if __name__ == "__main__":
     db = Database()
@@ -13,14 +13,10 @@ if __name__ == "__main__":
                   'ED', 'DL', 'SL', 'PN', 'PD', 'TM', 'PF', 'KH', 'AN', 'DD', 'CI', 'PP', 'SN'}
     cs_allowed = {"CZE", "TEXT", "TITLE", "DOCID", "DOCNO", "DATE", "DOC", "GEOGRAPHY", "HEADING"}
     db.load_folder(Path("./Ukol1/A1/documents_cs"), cs_tags, cs_allowed, verbose=True)
+    
+    while (request := input(">>> ")) != "QUIT":
+        print(db.evaluate(request))
 
-    while ((prompt := input(">>> ").strip()) != "QUIT"):
-        print(db.evaluate(prompt))
-
-    # found = set()
-    # root = ET.parse("./Ukol1/A1/documents_en/la020101.xml").getroot()
-    # for doc in root:
-    #     for elem in doc:
-    #         found.add(elem.tag)
-
-    # print(found)
+    recall, precision = Evaluator().evaluate_queries("./Ukol1/A1/topics-train_cs.xml", db, "./Ukol1/A1/qrels-train_cs.txt")
+    print("Recall: " + str(recall))
+    print("Precision: " + str(precision))

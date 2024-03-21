@@ -1,10 +1,9 @@
 import xml.etree.ElementTree as ET
-import re
 from pathlib import Path
 from preprocessor import Preprocessor
-from sortedcontainers import SortedList, SortedSet
+from sortedcontainers import SortedList
 import tempfile
-from QueryParser import QueryParser
+from queryparser import QueryParser
 
 class Database:
     def __init__(self) -> None:
@@ -36,7 +35,7 @@ class Database:
             query = self._parser.parse_request(request)
             return self._run_query(query)
         except Exception as e:
-            print("An error has occured:\n" + str(e))
+            print(f"An error has occured when processing request \"{request}\":\n" + str(e))
             return SortedList()
 
     def _add_entry(self, token: str, docID: str) -> None:

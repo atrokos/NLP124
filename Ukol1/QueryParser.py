@@ -1,5 +1,36 @@
 import re
 
+"""
+{
+    "type": "AND",
+    "left": {
+        "type": "value",
+        "value": "Brutus"
+    },
+    "right": {
+        "type": "OR",
+        "left": {
+            "type": "value",
+            "value": "Caesar"
+        },
+        "right": {
+            "type": "value",
+            "value": "Pontius"
+        }
+    }
+}
+
+- is equivalent to: Brutus AND (Caesar OR Pontius)
+
+Process:
+1) AND, value => get all documents with Brutus
+2) AND, OR => recursive call on OR
+    1) OR, value => get all documents with Caesar
+    2) OR, value => get all documents with Pontius
+    3) All values processed => unionize [Caesar] with [Pontius]
+    4) return result
+3) All values processed => intersect [Brutus] with [Caesar U Pontius]
+"""
 
 class QueryParser:
     def __init__(self) -> None:
@@ -73,7 +104,7 @@ class QueryParser:
                 "type": op,
                 "value": {"type": "value", "value": curr}
             })
-        elif len(self._operands) > 0:
+        elif len(self._operands) > 0 and self._operators[-1] != "(":
             left = self._operands.pop()
             op = self._operators.pop()                        
             self._operands.append({

@@ -1,38 +1,6 @@
 from typing import Optional
 
-"""
-{
-    "type": "AND",
-    "left": {
-        "type": "value",
-        "value": "Brutus"
-    },
-    "right": {
-        "type": "OR",
-        "left": {
-            "type": "value",
-            "value": "Caesar"
-        },
-        "right": {
-            "type": "value",
-            "value": "Pontius"
-        }
-    }
-}
 
-- is equivalent to: Brutus AND (Caesar OR Pontius)
-
-Process:
-1) AND, value => get all documents with Brutus
-2) AND, OR => recursive call on OR
-    1) OR, value => get all documents with Caesar
-    2) OR, value => get all documents with Pontius
-    3) All values processed => unionize [Caesar] with [Pontius]
-    4) return result
-3) All values processed => intersect [Brutus] with [Caesar U Pontius]
-
-First always evaluate user command. If it is not a NOT, throw ALL away.
-"""
 
 def tokenize_command(comm: str) -> list[str]:
     result = []
