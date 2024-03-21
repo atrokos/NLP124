@@ -1,24 +1,26 @@
-from urllib import request
 from database import Database
-from req_parser import parse_request
 from pathlib import Path
+
 
 if __name__ == "__main__":
     db = Database()
     cs_tags = {"TITLE", "TEXT", "HEADING"}
-
-    for file in Path("./Ukol1/A1/documents_cs").iterdir():
-        if not file.name.endswith(".xml"):
-            continue
-        try:
-            print(f"Processing {file}")
-            db.load_file(file, cs_tags)
-        except Exception as e:
-            print(f"Could not load: {file}")
+    en_tags = {"HD", "LD", "TE"}
+    en_allowed = {'DP', 'WS', 'GO', 'PT', 'LA', 'BR', 'GT', 'DC', 'JP', 'DH', 'SE', 'CR',
+                  'CB', 'CP', 'LD', 'PR', 'TI', 'NT', 'WD', 'NO', 'PY', 'HI', 'UP', 'CN', 'DOC',
+                  'CF', 'CO', 'SI', 'PG', 'CX', 'FN', 'AU', 'IN', 'DOCID', 'NA', 'TE', 'LATIMES2002',
+                  'HD', 'SM', 'BD', 'SP', 'DK', 'EI', 'ID', 'RS', 'IS', 'DF', 'PH', 'DOCNO',
+                  'ED', 'DL', 'SL', 'PN', 'PD', 'TM', 'PF', 'KH', 'AN', 'DD', 'CI', 'PP', 'SN'}
+    cs_allowed = {"CZE", "TEXT", "TITLE", "DOCID", "DOCNO", "DATE", "DOC", "GEOGRAPHY", "HEADING"}
+    db.load_folder(Path("./Ukol1/A1/documents_cs"), cs_tags, cs_allowed, verbose=True)
 
     while ((prompt := input(">>> ").strip()) != "QUIT"):
-        query = parse_request(prompt)
-        try:
-            print(db.run_query(query))
-        except Exception as e:
-            print(f"An error has occured:\n{str(e)}")
+        print(db.evaluate(prompt))
+
+    # found = set()
+    # root = ET.parse("./Ukol1/A1/documents_en/la020101.xml").getroot()
+    # for doc in root:
+    #     for elem in doc:
+    #         found.add(elem.tag)
+
+    # print(found)

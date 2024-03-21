@@ -8,11 +8,7 @@ def process_allowed(allowed: set[str]) -> set[str]:
 
     return result
 
-def escape_elements(file: str, allowed: set, /, verbose=False) -> str:
-    with open(file, "r", encoding="utf-8") as xml:
-        contents = xml.read().splitlines()
-
-    allowed = process_allowed(allowed)
+def escape_elements(contents: list[str], allowed: set) -> list[str]:
     pattern = re.compile(r".*(</?\S*>).*")
 
     for i in range(len(contents)):
@@ -22,18 +18,7 @@ def escape_elements(file: str, allowed: set, /, verbose=False) -> str:
         if (match := pattern.match(line)):
             if match.group(1) in allowed:
                 continue
-        
-        if verbose:
-            print("Escaped: " + line)
 
         contents[i] = escape(line)
 
-    return "\n".join(contents)
-
-
-if __name__ == "__main__":
-    allowed = {"CZE", "TEXT", "TITLE", "DOCID", "DOCNO", "DATE", "DOC", "GEOGRAPHY", "HEADING"}
-    escaped = escape_elements("./Ukol1/ln020225.xml", allowed)
-
-    with open("./Ukol1/result.xml", "w", encoding="utf-8") as xml:
-        xml.write(escaped)
+    return contents

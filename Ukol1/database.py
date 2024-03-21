@@ -1,16 +1,45 @@
 import xml.etree.ElementTree as ET
 import re
 from pathlib import Path
+from preprocessor import Preprocessor
 from sortedcontainers import SortedList, SortedSet
+import tempfile
+from QueryParser import QueryParser
 
 class Database:
     def __init__(self) -> None:
         self.entries = dict[str, SortedList]()
         self._docIDs = SortedList()
         self._last_docID = None
+        self._temp_file = tempfile.TemporaryDirectory()
+        self._parser = QueryParser()
         pass
 
-    def add_entry(self, token: str, docID: str) -> None:
+    def load_folder(self, folder: Path, tags: set[str], allowed: set[str], /, verbose=False) -> None:
+        preprocessor = Preprocessor(allowed)
+        preprocessor.preprocess_inputs(folder, Path(self._temp_file.name), verbose=verbose)
+        
+        for file in Path(self._temp_file.name).iterdir():
+            if not file.name.endswith(".xml"):
+                continue
+
+            if verbose: print("Indexing " + str(file) + "... ", end="", flush=True)
+            documents = ET.parse(file).getroot()
+            for document in documents:
+                if document.tag == "DOC":
+                    self._add_document(tags, document)
+            
+            if verbose: print("done")
+
+    def evaluate(self, request: str) -> SortedList:
+        try:
+            query = self._parser.parse_request(request)
+            return self._run_query(query)
+        except Exception as e:
+            print("An error has occured:\n" + str(e))
+            return SortedList()
+
+    def _add_entry(self, token: str, docID: str) -> None:
         if self._last_docID != docID:
             self._docIDs.add(docID)
             self._last_docID = docID
@@ -20,7 +49,7 @@ class Database:
         else:
             self.entries[token] = SortedList([docID])
 
-    def add_document(self, tags: set[str], document: ET.Element) -> None:
+    def _add_document(self, tags: set[str], document: ET.Element) -> None:
         """
         Add the given document to the database db, extracting only the given tags.
         """
@@ -35,24 +64,18 @@ class Database:
             if child.tag not in tags:
                 continue
 
-            tokens.update(tokenize(child.text))
+            tokens.update(QueryParser.tokenize(child.text))
 
         for token in tokens:
-            self.add_entry(token, docID) # type: ignore
+            self._add_entry(token, docID) # type: ignore
             
     def _request_value(self, value_name: str) -> SortedList:
         if (l := self.entries.get(value_name, None)) is not None:
             return l
         
         return SortedList()
-
-    def load_file(self, file: Path, tags: set[str]) -> None:
-        documents = ET.parse(file).getroot()
-        for document in documents:
-            if document.tag == "DOC":
-                self.add_document(tags, document)
                 
-    def run_query(self, request: dict) -> SortedList:
+    def _run_query(self, request: dict) -> SortedList:
         match request["type"]:
             case "AND":
                 return self._process_and(request["left"], request["right"])
@@ -62,12 +85,14 @@ class Database:
                 return self._process_not(request["value"])
             case "value":
                 return self._request_value(request["value"])
+            case "null":
+                return SortedList()
             case _:
                 raise RuntimeError("Unknown request type: " + request["type"])
             
     def _process_and(self, left: dict, right: dict) -> SortedList:
-        left = self.run_query(left)
-        right = self.run_query(right)
+        left = self._run_query(left)
+        right = self._run_query(right)
         result = SortedList()
         l, r = 0, 0
         while l < len(left) and r < len(right):
@@ -83,8 +108,8 @@ class Database:
         return result
         
     def _process_or(self, left: dict, right: dict) -> SortedList:
-        left = self.run_query(left)
-        right = self.run_query(right)
+        left = self._run_query(left)
+        right = self._run_query(right)
         result = SortedList()
         l, r = 0, 0
         while l < len(left) and r < len(right):
@@ -108,7 +133,7 @@ class Database:
         return result
     
     def _process_not(self, value: dict) -> SortedList:
-        value = self.run_query(value)
+        value = self._run_query(value)
         result = SortedList()
         v, i = 0, 0
         while v < len(value) and i < len(self._docIDs):
@@ -123,12 +148,3 @@ class Database:
             result.update(self._docIDs[i:])
         
         return result
-        
-
-def tokenize(sentence: str | None) -> list[str]:
-    if sentence is None:
-        raise RuntimeError("Expected a sentence, got None.")
-    
-    tokens = re.findall(r'\b\w+\b', sentence)
-
-    return tokens

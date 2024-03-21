@@ -2,7 +2,7 @@ from typing import Optional
 
 """
 {
-    "type": AND,
+    "type": "AND",
     "left": {
         "type": "value",
         "value": "Brutus"
@@ -16,7 +16,7 @@ from typing import Optional
         "right": {
             "type": "value",
             "value": "Pontius"
-        },
+        }
     }
 }
 
@@ -30,9 +30,6 @@ Process:
     3) All values processed => unionize [Caesar] with [Pontius]
     4) return result
 3) All values processed => intersect [Brutus] with [Caesar U Pontius]
-
-Handling NOT => diff with w
-=> must have an implicit ALL AND (User command)
 
 First always evaluate user command. If it is not a NOT, throw ALL away.
 """
@@ -79,7 +76,7 @@ def parse_command(tokens: list[str]):
     while len(operators) > 0:
         resolve_two(operands, operators)
 
-    return operands[0]
+    return operands[0] if len(operands) > 0 else []
 
 def resolve_two(operands: list, operators: list):
     op = operators.pop()
@@ -118,6 +115,4 @@ def resolve_one(operands: list, operators: list, curr: str):
             {"type": "value", "value": curr}
         )
 
-def parse_request(request: str) -> dict:
-    return parse_command(tokenize_command(request))
 
