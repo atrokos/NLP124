@@ -38,9 +38,13 @@ class Preprocessor:
 
         for i in range(len(contents)):
             line = contents[i]
+            line = line.replace("", "")
             if line.startswith("<?") or line.startswith("<!"):
                 continue
             if (match := pattern.match(line)):
+                if "</LATIMES2002></LATIMES2002>" in line:
+                    line = "</LATIMES2002>"
+                contents[i] = line
                 if match.group(1) in allowed:
                     continue
 

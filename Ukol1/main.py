@@ -12,11 +12,11 @@ if __name__ == "__main__":
                   'HD', 'SM', 'BD', 'SP', 'DK', 'EI', 'ID', 'RS', 'IS', 'DF', 'PH', 'DOCNO',
                   'ED', 'DL', 'SL', 'PN', 'PD', 'TM', 'PF', 'KH', 'AN', 'DD', 'CI', 'PP', 'SN'}
     cs_allowed = {"CZE", "TEXT", "TITLE", "DOCID", "DOCNO", "DATE", "DOC", "GEOGRAPHY", "HEADING"}
-    db.load_folder(Path("./Ukol1/A1/documents_cs"), cs_tags, cs_allowed, verbose=True)
+    db.load_folder(Path("./Ukol1/A1/documents_en"), en_tags, en_allowed, verbose=True)
     
     while (request := input(">>> ")) != "QUIT":
         print(db.evaluate(request))
 
-    recall, precision = Evaluator().evaluate_queries("./Ukol1/A1/topics-train_cs.xml", db, "./Ukol1/A1/qrels-train_cs.txt")
+    recall, precision = Evaluator().evaluate_queries("./Ukol1/A1/topics-train_en.xml", db, "./Ukol1/A1/qrels-train_en.txt")
     print("Recall: " + str(recall))
     print("Precision: " + str(precision))

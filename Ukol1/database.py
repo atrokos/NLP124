@@ -13,6 +13,9 @@ class Database:
         self._temp_file = tempfile.TemporaryDirectory()
         self._parser = QueryParser()
         pass
+    
+    def __del__(self):
+        self._temp_file.cleanup()
 
     def load_folder(self, folder: Path, tags: set[str], allowed: set[str], /, verbose=False) -> None:
         preprocessor = Preprocessor(allowed)
