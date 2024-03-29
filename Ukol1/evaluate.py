@@ -42,7 +42,7 @@ class Evaluator:
     def _parse_gold(self, gold: str):
         query_id, _, docid, included = gold.split()
         
-        return query_id, docid, bool(included)
+        return query_id, docid, bool(int(included))
         
     def _get_stats(self, topics, golds):
         total_tp, total_fp, total_fn = 0, 0, 0
@@ -54,7 +54,7 @@ class Evaluator:
             
             tp = len(set.intersection(found_docs, golds_docs))
             fp = len(found_docs) - tp
-            fn = len(golds_docs - found_docs) # TODO Mozna jinak?
+            fn = len(golds_docs) - tp # TODO Mozna jinak?
             
             total_tp += tp
             total_fp += fp
