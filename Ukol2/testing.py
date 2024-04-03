@@ -10,21 +10,18 @@ def add(t1: tuple[int, int], t2: tuple[int, int]) -> tuple[int, int]:
 def check_text(text:list[str], output:list[str]):
     results = (0, 0)
     for text_line, output_line in zip(text, output):
-        text_words = nltk.word_tokenize(text_line, language="czech")
-        output_words = nltk.word_tokenize(output_line, language="czech")
+        text_words = nltk.word_tokenize(text_line)
+        output_words = nltk.word_tokenize(output_line)
 
-        if len(text_words) != len(output_words):
-            raise RuntimeError(f"Lines do not have the same amount of words!\nText: {text_words}\nOutput: {output_words}")
 
         for t_word, o_word in zip(text_words, output_words):
             results = add(results, check_word(t_word, o_word))
+            
+    return results
 
 
 def check_word(exp: str, act: str) -> tuple[int, int]:
     "Returns the amount of correct out of total."
-    if len(exp) != len(act):
-        raise RuntimeError(f"Words do not have the same lenght!\n{exp} ; {act}")
-
     correct: int = sum(map(lambda x: x[0] == x[1], zip(exp, act)))
     total: int = len(exp)
     

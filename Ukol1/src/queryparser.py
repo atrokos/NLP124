@@ -1,5 +1,6 @@
 import re
 
+
 """
 {
     "type": "AND",
@@ -118,12 +119,18 @@ class QueryParser:
             )
 
     def parse_request(self, request: str) -> dict:
+        """
+        Parses the given request into an abstract syntax tree.
+        """
         self._operands = []
         self._operators = []
         return self._parse_command(QueryParser._tokenize_command(request))
 
     @staticmethod
     def tokenize(sentence: str | None) -> list[str]:
+        """
+        Tokenizes the given sentence into a list of words, delimited by whitespace characters or punctuation marks.
+        """
         if sentence is None:
             return [""]
         

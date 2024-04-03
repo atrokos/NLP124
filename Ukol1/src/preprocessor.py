@@ -1,27 +1,32 @@
 from xml.sax.saxutils import escape
-import re
 from pathlib import Path
+import re
+
+from click import progressbar
+
 
 class Preprocessor:
     def __init__(self, allowed: set[str]):
         self._allowed = Preprocessor._process_allowed(allowed)
 
-    def preprocess_inputs(self, folder: Path, out: Path, /, verbose=False):
-        for file in folder.iterdir():
-            if not file.name.endswith(".xml"):
-                continue
-            
-            if verbose: print("Preprocessing " + str(file) + "... ", end="")
-            with open(file, "r", encoding="utf-8") as xml:
-                contents = xml.read().splitlines()
+    def preprocess_inputs(self, folder: Path, out: Path, count):
+        """
+        Preprocesses all .xml files in the given folder, putting them in the out folder.
+        Count is the number of all .xml files in the folder, to make the progressbar more informative.
+        """
+        with progressbar(folder.iterdir(), label="Preprocessing files", length=count) as files:
+            for file in files:
+                if not file.name.endswith(".xml"):
+                    continue
 
-            contents_fixed = Preprocessor._escape_elements(contents, self._allowed)
-            
-            target = out.joinpath(file.name)
-            with open(target, "w", encoding="utf-8") as xml:
-                xml.write("\n".join(contents_fixed))
+                with open(file, "r", encoding="utf-8") as xml:
+                    contents = xml.read().splitlines()
 
-            if verbose: print("done")
+                contents_fixed = Preprocessor._escape_elements(contents, self._allowed)
+                
+                target = out.joinpath(file.name)
+                with open(target, "w", encoding="utf-8") as xml:
+                    xml.write("\n".join(contents_fixed))
 
     
     @staticmethod
